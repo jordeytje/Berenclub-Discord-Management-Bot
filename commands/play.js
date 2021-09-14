@@ -1,6 +1,8 @@
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 
+require('dotenv').config();
+
 module.exports = {
 	name: 'p',
 	description: 'Voegt de bot toe en speelt Youtube af',
@@ -10,14 +12,6 @@ module.exports = {
 		// check of ze in een channel zitten
 		if (!voiceChannel)
 			return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
-
-		// check of ze de rechten hebben
-		const permissions = voiceChannel.permissionsFor(message.client.user);
-		if (!permissions.has('CONNECT'))
-			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
-
-		if (!permissions.has('SPEAK'))
-			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
 
 		if (!message.member.roles.cache.has(process.env.ROLE_ID_TEST))
 			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
