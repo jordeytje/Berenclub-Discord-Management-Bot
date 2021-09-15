@@ -1,69 +1,164 @@
+const { MessageEmbed } = require('discord.js');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
+
+const queue = new Map();
 
 require('dotenv').config();
 
 module.exports = {
-	name: 'p',
+	name: 'play',
+	aliases: [ 'p', 'skip', 'stop', 'queue', 'q' ],
 	description: 'Voegt de bot toe en speelt Youtube af',
-	async execute(client, message, args) {
+	async execute(client, message, cmd, args) {
 		const voiceChannel = message.member.voice.channel;
 
 		// check of ze in een channel zitten
 		if (!voiceChannel)
 			return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
 
-		if (!message.member.roles.cache.has(process.env.ROLE_ID_TEST))
+		if (
+			!message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER) //ROLE_ID_TEST
+		)
 			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
 
-		// check of een argument wordt meegegeven
-		if (!args.length) {
-			return message.channel.send('You had one job. Now suffer the consequences. Much love - Rick');
-		}
+		const serverQueue = queue.get(message.guild.id);
 
-		// keywords gebaseerd op URL
-		const validURL = (str) => {
-			var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-			if (!regex.test(str)) {
-				return false;
-			} else {
-				return true;
+		if (cmd === 'play' || cmd === 'p') {
+			// check of een argument wordt meegegeven
+			if (!args.length) {
+				args = [ 'https://www.youtube.com/watch?v=iik25wqIuFo&ab_channel=Rickroll%2Cbutwithadifferentlink' ];
+
+				message.channel.send(
+					`${message.author} You had one job. Now suffer the consequences. Much love - Rick`
+				);
 			}
-		};
 
-		if (validURL(args[0])) {
-			const connection = await voiceChannel.join();
-			const stream = ytdl(args[0], { filter: 'audioonly' });
+			let song = {};
 
-			connection.play(stream, { seek: 0, volume: 1 }).on('finish', () => {
-				voiceChannel.leave();
-			});
+			if (ytdl.validateURL(args[0])) {
+				// video via URL
+				const songInfo = await ytdl.getInfo(args[0]);
+				song = {
+					title: songInfo.videoDetails.title,
+					url: songInfo.videoDetails.video_url,
+					time: calculateTime(songInfo.videoDetails.lengthSeconds)
+				};
+			} else {
+				//video via keywords
+				const videoFinder = async (query) => {
+					const videoResult = await ytSearch(query);
+					return videoResult.videos.length > 1 ? videoResult.videos[0] : null;
+				};
 
-			await message.reply(`Aan het genieten van 't **linkje van ${message.author}**`);
+				const video = await videoFinder(args.join(' '));
 
-			return;
-		}
+				if (video) {
+					console.log(video);
+					song = { title: video.title, url: video.url, time: video.timestamp };
+				} else {
+					message.channel.send('Niks gevonden');
+				}
+			}
 
-		// keywords niet gebaseerd op URL
-		const connection = await voiceChannel.join();
+			// muziek queue
+			if (!serverQueue) {
+				const queueConstructor = {
+					voiceChannel: voiceChannel,
+					textChannel: message.channel,
+					connection: null,
+					songs: []
+				};
 
-		const videoFinder = async (query) => {
-			const videoResult = await ytSearch(query);
+				queue.set(message.guild.id, queueConstructor);
+				queueConstructor.songs.push(song);
 
-			return videoResult.videos.length > 1 ? videoResult.videos[0] : null;
-		};
-
-		const video = await videoFinder(args.join(' '));
-
-		if (video) {
-			const stream = ytdl(video.url, { filter: 'audioonly' });
-			connection.play(stream, { seek: 0, volume: 1 }).on('finish', () => {
-				voiceChannel.leave();
-			});
-
-			await message.reply(`Aan het genieten van **${video.title}**`);
-		} else {
-			message.channel.send('Niks gevonden');
+				try {
+					const connection = await voiceChannel.join();
+					queueConstructor.connection = connection;
+					videoPlayer(message.guild, queueConstructor.songs[0]);
+				} catch (err) {
+					queue.delete(message.guild.id);
+					message.channel.send('RIP der ging wat fout.');
+					throw err;
+				}
+			} else {
+				serverQueue.songs.push(song);
+				return message.channel.send(`**${song.title}** toegevoegd aan queue.`);
+			}
+		} else if (cmd === 'skip') {
+			skipSong(message, serverQueue);
+		} else if (cmd === 'stop') {
+			stopSong(message, serverQueue);
+		} else if (cmd === 'queue' || cmd === 'q') {
+			songList(message, serverQueue);
 		}
 	}
 };
+
+const videoPlayer = async (guild, song) => {
+	const songQueue = queue.get(guild.id);
+
+	if (!song) {
+		songQueue.voiceChannel.leave();
+		queue.delete(guild.id);
+		return;
+	}
+
+	const stream = ytdl(song.url, { filter: 'audioonly' });
+	songQueue.connection.play(stream, { seek: 0, volume: 0.5 }).on('finish', () => {
+		songQueue.songs.shift();
+		videoPlayer(guild, songQueue.songs[0]);
+	});
+
+	await songQueue.textChannel.send(`Aan het genieten van **${song.title}**`);
+};
+
+const skipSong = (message, serverQueue) => {
+	if (!message.member.voice.channel)
+		return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
+
+	if (!serverQueue) return message.channel.send('Er is geen queue.');
+
+	serverQueue.connection.dispatcher.end();
+};
+
+const stopSong = (message, serverQueue) => {
+	if (!message.member.voice.channel)
+		return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
+
+	if (!serverQueue) return message.channel.send('Er is geen queue.');
+
+	serverQueue.songs = [];
+	serverQueue.connection.dispatcher.end();
+
+	message.channel.send('*De bot is geyeet into oblivion.*');
+};
+
+const songList = (message, serverQueue) => {
+	if (!message.member.voice.channel)
+		return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
+
+	if (!serverQueue) return message.channel.send('Er is geen queue.');
+
+	let list = [];
+	serverQueue.songs.forEach((q) => {
+		list.push(`${q.title} - ${q.time}`);
+	});
+
+	message.channel.send('```' + list.map((i) => `${list.indexOf(i) + 1}. ${i}`).join('\n') + '```');
+};
+
+// secondes naar minuten en secondes
+function calculateTime(time) {
+	var hr = ~~(time / 3600);
+	var min = ~~((time % 3600) / 60);
+	var sec = time % 60;
+	var sec_min = '';
+	if (hr > 0) {
+		sec_min += '' + hrs + ':' + (min < 10 ? '0' : '');
+	}
+	sec_min += '' + min + ':' + (sec < 10 ? '0' : '');
+	sec_min += '' + sec;
+	return sec_min;
+}
