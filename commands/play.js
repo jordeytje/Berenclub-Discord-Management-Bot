@@ -17,10 +17,11 @@ module.exports = {
 		if (!voiceChannel)
 			return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
 
-		if (
-			!message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER) //ROLE_ID_TEST
-		)
-			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
+    if (message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER) || message.member.roles.cache.has(process.env.ROLE_ID_TEST)) {
+      console.log('gottem boii');
+    } else {
+      return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
+    }
 
 		const serverQueue = queue.get(message.guild.id);
 

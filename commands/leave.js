@@ -13,6 +13,6 @@ module.exports = {
 			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
 
 		await voiceChannel.leave();
-		await message.channel.send('*De bot is geyeet into oblivion.*');
+		await message.channel.send('*De bot is geyeet into oblivion.* atleast it should be...');
 	}
 };

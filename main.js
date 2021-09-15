@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 require('dotenv').config();
+const keepAlive = require('./server');
 const client = new Discord.Client();
 
 const fs = require('fs');
@@ -11,4 +12,5 @@ client.events = new Discord.Collection();
 	require(`./handlers/${handler}`)(client, Discord);
 });
 
+keepAlive();
 client.login(process.env.DISCORD_TOKEN);
