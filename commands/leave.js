@@ -1,5 +1,5 @@
 module.exports = {
-	name: 'forcestop',
+	name: 'forcestop-death',
 	description: "Stop de bot en yeet 'm het spraakkanaal uit. (unsafe)",
 	async execute(client, message, args) {
 		const voiceChannel = message.member.voice.channel;
