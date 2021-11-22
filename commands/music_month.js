@@ -19,6 +19,13 @@ module.exports = {
     }
 
     if (args.length > 0) {
+      if (args[0] === 'r') {
+          let random = Math.floor(Math.random() * 26);
+          message.channel.send(`${message.author} Is feeling funky en heeft random de letter **${alphabet[random]}** gekozen. Vandaag ga jij luisteren naar...`);
+
+          return randomizeMusic(random);
+      }
+
       args = parseInt(args[0]);
 
       if (args > 0 && args <= 26) {
@@ -31,7 +38,7 @@ module.exports = {
 
     } else {
       if (day > 0 && day <= 26) {
-        message.channel.send(`${message.author} Vandaag is het **${day} ${month}**. Vandaag is de letter **${alphabet[day]}** en ga je luisteren naar...`);
+        message.channel.send(`${message.author} Vandaag is het **${day} ${month}**. Vandaag is de letter **${alphabet[day - 1]}** en ga je luisteren naar...`);
         return randomizeMusic(day - 1);
       } else {
         message.channel.send(`${message.author} Vandaag is het **${day} ${month}**. Vandaag is er geen letter. Maar je kan zelf een dag kiezen door een nummer mee te geven.`);
