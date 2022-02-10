@@ -17,11 +17,8 @@ module.exports = {
 		if (!voiceChannel)
 			return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
 
-    if (message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER) || message.member.roles.cache.has(process.env.ROLE_ID_TEST)) {
-      console.log('gottem boii');
-    } else {
-      return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
-    }
+		if (!message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER))
+			return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
 
 		const serverQueue = queue.get(message.guild.id);
 
@@ -31,8 +28,10 @@ module.exports = {
 				args = [ 'https://www.youtube.com/watch?v=iik25wqIuFo&ab_channel=Rickroll%2Cbutwithadifferentlink' ];
 
 				message.channel.send(
-					`${message.author} You had one job. Now suffer the consequences. Much love - Rick`
+					`${message.author} You fcked up. Gottemmm. Much love - Rick`
 				);
+			} else if (args[0].includes('spotify')) {
+				return message.channel.send(`${message.author} Spotify wordt niet ondersteund.`);
 			}
 
 			let song = {};
@@ -41,9 +40,9 @@ module.exports = {
 				// video via URL
 				const songInfo = await ytdl.getInfo(args[0]);
 				song = {
-					title: songInfo.videoDetails.title,
-					url: songInfo.videoDetails.video_url,
-					time: calculateTime(songInfo.videoDetails.lengthSeconds)
+					title: songInfo.videoDetails.title ? songInfo.videoDetails.title : 'Onbekend, but it will work',
+					url: songInfo.videoDetails.video_url ? songInfo.videoDetails.video_url : 'Onbekend, but it will work',
+					time: calculateTime(songInfo.videoDetails.lengthSeconds) ? calculateTime(songInfo.videoDetails.lengthSeconds) : 'Onbekende tijd, but it will work'
 				};
 			} else {
 				//video via keywords
@@ -55,8 +54,11 @@ module.exports = {
 				const video = await videoFinder(args.join(' '));
 
 				if (video) {
-					console.log(video);
-					song = { title: video.title, url: video.url, time: video.timestamp };
+					song = {
+						title: video.title ? video.title : 'Onbekend, but it will work',
+						url: video.url ? video.url : 'Onbekend, but it will work',
+						time: video.timestamp ? video.timestamp : 'Onbekend, but it will work'
+					};
 				} else {
 					message.channel.send('Niks gevonden');
 				}
@@ -87,7 +89,7 @@ module.exports = {
 				serverQueue.songs.push(song);
 				return message.channel.send(`**${song.title}** toegevoegd aan queue.`);
 			}
-		} else if (cmd === 'skip') {
+		} else if (cmd === 'skip' || cmd === 's') {
 			skipSong(message, serverQueue);
 		} else if (cmd === 'stop') {
 			stopSong(message, serverQueue);
@@ -128,10 +130,10 @@ const stopSong = (message, serverQueue) => {
 	if (!message.member.voice.channel)
 		return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
 
-	if (!serverQueue) return message.channel.send('Er is geen queue.');
-
-	serverQueue.songs = [];
-	serverQueue.connection.dispatcher.end();
+	// if (!serverQueue) return message.channel.send('Er is geen queue.');
+	//
+	// serverQueue.songs = [];
+	// serverQueue.connection.dispatcher.end();
 
 	message.channel.send('*De bot is geyeet into oblivion.*');
 };
