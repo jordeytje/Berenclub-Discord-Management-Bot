@@ -42,7 +42,7 @@ module.exports = {
 				song = {
 					title: songInfo.videoDetails.title ? songInfo.videoDetails.title : 'Onbekend, but it will work',
 					url: songInfo.videoDetails.video_url ? songInfo.videoDetails.video_url : 'Onbekend, but it will work',
-					time: calculateTime(songInfo.videoDetails.lengthSeconds) ? calculateTime(songInfo.videoDetails.lengthSeconds) : 'Onbekende tijd, but it will work'
+					time: calculateTime(songInfo.videoDetails.lengthSeconds) ? calculateTime(songInfo.videoDetails.lengthSeconds) : '0'
 				};
 			} else {
 				//video via keywords
@@ -57,7 +57,7 @@ module.exports = {
 					song = {
 						title: video.title ? video.title : 'Onbekend, but it will work',
 						url: video.url ? video.url : 'Onbekend, but it will work',
-						time: video.timestamp ? video.timestamp : 'Onbekend, but it will work'
+						time: video.timestamp ? video.timestamp : '0'
 					};
 				} else {
 					return message.channel.send('Niks gevonden');
@@ -118,12 +118,10 @@ const videoPlayer = async (guild, song) => {
 };
 
 const skipSong = (message, serverQueue) => {
-	if (!message.member.voice.channel)
+	if (message && !message.member.voice.channel)
 		return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
 
-	if (!serverQueue) return message.channel.send('Er is geen queue.');
-
-	serverQueue.connection.dispatcher.end();
+	if (serverQueue) serverQueue.connection.dispatcher.end();
 };
 
 const stopSong = (message, serverQueue) => {

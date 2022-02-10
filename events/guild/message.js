@@ -1,5 +1,5 @@
 module.exports = (Discord, client, message) => {
-	const prefix = '?';
+	const prefix = '-';
 	const badNamesArray = ['jord', 'jordt', 'jort', 'jorde', 'jordei', 'jordie', 'jordieus', 'yord', 'yort', 'yordt', 'yordey', 'yordei', 'yordy', 'yordie'];
 
 	if (!message.content.startsWith(prefix) || message.author.bot) {
