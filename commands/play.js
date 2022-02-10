@@ -60,7 +60,7 @@ module.exports = {
 						time: video.timestamp ? video.timestamp : 'Onbekend, but it will work'
 					};
 				} else {
-					message.channel.send('Niks gevonden');
+					return message.channel.send('Niks gevonden');
 				}
 			}
 
