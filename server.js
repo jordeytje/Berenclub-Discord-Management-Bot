@@ -4,7 +4,7 @@ const server = express();
 
 server.all('/', (reg, res) => {
   res.send('Bot is running.');
-})
+});
 
 function keepAlive() {
   server.listen(3000, () => {
