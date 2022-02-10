@@ -8,7 +8,7 @@ require('dotenv').config();
 
 module.exports = {
 	name: 'play',
-	aliases: [ 'p', 'skip', 'stop', 'queue', 'q' ],
+	aliases: [ 'p', 'skip', 'stop', 'queue', 'q', 's' ],
 	description: 'Voegt de bot toe en speelt Youtube af',
 	async execute(client, message, cmd, args) {
 		const voiceChannel = message.member.voice.channel;
