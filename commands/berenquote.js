@@ -5,16 +5,16 @@ module.exports = {
 	name: 'b',
 	aliases: [ 'b quote', 'quote'],
 	description: "Berenquote",
-	async execute(client, message, cmd, args) {
+	async execute(client, message) {
 		const arr = quoteData[`messages`];
-    const randomQuote = arr[Math.floor(Math.random()*arr.length)];
+		const randomQuote = arr[Math.floor(Math.random()*arr.length)];
 
-    const embed = new MessageEmbed()
-      .setColor('#0099ff')
-      .setTitle('BerenQuote')
-      .setDescription(`${randomQuote['content']}`)
-      .setFooter(`Opgeslagen door ${randomQuote['author']['name']}`, `${randomQuote['author']['avatarUrl']}`);
+		const embed = new MessageEmbed()
+		  .setColor('#0099ff')
+		  .setTitle('BerenQuote')
+		  .setDescription(`${randomQuote['content']}`)
+		  .setFooter(`Opgeslagen door ${randomQuote['author']['name']}`, `${randomQuote['author']['avatarUrl']}`);
 
-      message.channel.send(embed);
+		  message.channel.send(embed);
 	}
 };
