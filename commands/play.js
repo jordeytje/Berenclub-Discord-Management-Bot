@@ -43,6 +43,24 @@ module.exports = {
 					url: songInfo.videoDetails.video_url,
 					time: calculateTime(songInfo.videoDetails.lengthSeconds)
 				};
+			}  else {
+				//video via keywords
+				const videoFinder = async (query) => {
+					const videoResult = await ytSearch(query);
+					return videoResult.videos.length > 1 ? videoResult.videos[0] : null;
+				};
+
+				const video = await videoFinder(args.join(' '));
+
+				if (video) {
+					song = {
+						title: video.title ? video.title : 'Onbekend, but it will work',
+						url: video.url ? video.url : 'Onbekend, but it will work',
+						time: video.timestamp ? video.timestamp : '0'
+					};
+				} else {
+					return message.channel.send('Niks gevonden');
+				}
 			}
 
 			// muziek queue
