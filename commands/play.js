@@ -8,17 +8,15 @@ require('dotenv').config();
 
 module.exports = {
 	name: 'play',
-	aliases: [ 'p', 'skip', 'stop', 'queue', 'q', 's' ],
+	aliases: ['skip', 'stop', 'queue', 'q', 's', 'p'],
 	description: 'Voegt de bot toe en speelt Youtube af',
+
 	async execute(client, message, cmd, args) {
 		const voiceChannel = message.member.voice.channel;
 
-		// check of ze in een channel zitten
+		// check of ze in een voice channel zitten
 		if (!voiceChannel)
 			return message.channel.send('Je moet in een spraakkanaal zitten om dit commando uit te voeren.');
-
-		// if (!message.member.roles.cache.has(process.env.ROLE_ID_RODE_PANDABEER))
-		// 	return message.channel.send('Je hebt niet de rechten om dit commando uit te voeren.');
 
 		const serverQueue = queue.get(message.guild.id);
 
@@ -39,29 +37,12 @@ module.exports = {
 			if (ytdl.validateURL(args[0])) {
 				// video via URL
 				const songInfo = await ytdl.getInfo(args[0]);
+
 				song = {
-					title: songInfo.videoDetails.title ? songInfo.videoDetails.title : 'Onbekend, but it will work',
-					url: songInfo.videoDetails.video_url ? songInfo.videoDetails.video_url : 'Onbekend, but it will work',
-					time: calculateTime(songInfo.videoDetails.lengthSeconds) ? calculateTime(songInfo.videoDetails.lengthSeconds) : '0'
+					title: songInfo.videoDetails.title,
+					url: songInfo.videoDetails.video_url,
+					time: calculateTime(songInfo.videoDetails.lengthSeconds)
 				};
-			} else {
-				//video via keywords
-				const videoFinder = async (query) => {
-					const videoResult = await ytSearch(query);
-					return videoResult.videos.length > 1 ? videoResult.videos[0] : null;
-				};
-
-				const video = await videoFinder(args.join(' '));
-
-				if (video) {
-					song = {
-						title: video.title ? video.title : 'Onbekend, but it will work',
-						url: video.url ? video.url : 'Onbekend, but it will work',
-						time: video.timestamp ? video.timestamp : '0'
-					};
-				} else {
-					return message.channel.send('Niks gevonden');
-				}
 			}
 
 			// muziek queue
@@ -130,7 +111,6 @@ const stopSong = (message, serverQueue) => {
 
 	if (serverQueue) {
 		serverQueue.songs = [];
-		serverQueue.connection.dispatcher.end();
 
 		skipSong();
 	}
