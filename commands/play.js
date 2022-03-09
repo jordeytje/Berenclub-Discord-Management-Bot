@@ -81,7 +81,7 @@ module.exports = {
 					videoPlayer(message.guild, queueConstructor.songs[0]);
 				} catch (err) {
 					queue.delete(message.guild.id);
-					message.channel.send('RIP der ging wat fout.');
+					message.channel.send('RIP der ging wat fout, probeer \'t ff opnieuw..');
 					throw err;
 				}
 			} else {
@@ -129,8 +129,7 @@ const stopSong = (message, serverQueue) => {
 
 	if (serverQueue) {
 		serverQueue.songs = [];
-
-		skipSong();
+		serverQueue.connection.dispatcher.end();
 	}
 
 	message.channel.send('*De bot is geyeet into oblivion.*');
