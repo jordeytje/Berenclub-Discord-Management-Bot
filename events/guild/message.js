@@ -19,7 +19,10 @@ module.exports = (Discord, client, message) => {
 	const command = client.commands.get(cmd) || client.commands.find((a) => a.aliases && a.aliases.includes(cmd));
 
  if (command) {
-		message.delete();
+    if (command['name'] === 'b') {
+      message.delete();
+    }
+   
 		command.execute(client, message, cmd, args, Discord);
 	}
 };
